@@ -1,0 +1,16 @@
+{
+  "name": "cambricon-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "寒武纪(688256) 盘中实时分析页面：Cloudflare Worker 代理免费行情源 + 浏览器端指标计算",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "lightweight-charts": "5.2.1",
+    "wrangler": "^4.0.0"
+  }
+}

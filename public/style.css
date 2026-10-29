@@ -1,0 +1,266 @@
+:root {
+  --bg: #0f1115;
+  --card: #171a21;
+  --line: #262b36;
+  --text: #e6e8ee;
+  --muted: #8a93a6;
+  --up: #f04848;
+  --down: #22b35e;
+  --vwap: #f5c542;
+  --accent: #4c8dff;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--muted);
+}
+.up {
+  color: var(--up);
+}
+.down {
+  color: var(--down);
+}
+
+button,
+input {
+  font: inherit;
+  color: var(--text);
+  background: #222733;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+button {
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--accent);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(15, 17, 21, 0.95);
+  backdrop-filter: blur(6px);
+  z-index: 10;
+}
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.title h1 {
+  margin: 0;
+  font-size: 22px;
+}
+.code-form {
+  display: flex;
+  gap: 4px;
+}
+.code-form input {
+  width: 80px;
+}
+.price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.price {
+  font-size: 30px;
+  font-weight: 600;
+}
+.change {
+  font-size: 16px;
+}
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #2a3040;
+  font-size: 13px;
+}
+.pill.open {
+  background: rgba(240, 72, 72, 0.18);
+  color: #ff8a8a;
+}
+.pill.lunch,
+.pill.pre {
+  background: rgba(245, 197, 66, 0.16);
+  color: var(--vwap);
+}
+
+.banner {
+  margin: 12px 20px 0;
+  padding: 8px 12px;
+  border: 1px solid #6b4e16;
+  background: #2a2112;
+  border-radius: 8px;
+  color: #f3d08a;
+  font-size: 13px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  padding: 16px 20px;
+}
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .status {
+    margin-left: 0;
+  }
+}
+
+.col-main,
+.col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.card h2 small {
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.summary {
+  margin: 0;
+  padding-left: 18px;
+}
+.summary li {
+  margin: 3px 0;
+}
+
+.legend {
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 18px;
+}
+.chart {
+  width: 100%;
+}
+.chart-main {
+  height: 430px;
+}
+.chart-sub {
+  height: 200px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 14px;
+  margin: 0;
+}
+.stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dashed var(--line);
+  padding: 2px 0;
+}
+.stats dt {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.stats dd {
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.book {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.book td {
+  padding: 2px 4px;
+}
+.book td:nth-child(2),
+.book td:nth-child(3) {
+  text-align: right;
+}
+.book tr.sep td {
+  border-top: 1px solid var(--line);
+  padding: 0;
+}
+
+.signals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 360px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+.signals li {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.signals li.fresh {
+  animation: flash 2s ease-out 3;
+}
+.signals .t {
+  color: var(--muted);
+  width: 42px;
+  flex: none;
+}
+@keyframes flash {
+  0% {
+    background: rgba(76, 141, 255, 0.35);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+.foot {
+  padding: 4px 20px 24px;
+  font-size: 12px;
+}
+.foot p {
+  margin: 4px 0;
+}
