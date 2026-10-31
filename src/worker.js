@@ -3,9 +3,11 @@
 
 import {
   benchmarkOf,
+  em15Bars,
   emFundFlow,
   emMinuteBars,
   emQuote,
+  tencent15Bars,
   tencentMinuteBars,
   tencentQuotes,
   tencentSymbol,
@@ -51,12 +53,13 @@ async function buildSnapshot(code) {
   const stockSym = tencentSymbol(code);
   const benchSym = tencentSymbol(bench.code, true);
 
-  const [emQ, txQ, emBars, emIdx, flow] = await Promise.allSettled([
+  const [emQ, txQ, emBars, emIdx, flow, emK15] = await Promise.allSettled([
     emQuote(code),
     tencentQuotes([{ symbol: stockSym }, { symbol: benchSym }]),
     emMinuteBars(code),
     emMinuteBars(bench.code, true),
     emFundFlow(code),
+    em15Bars(code),
   ]);
 
   const errors = []; // 没有拿到数据的项
@@ -99,6 +102,15 @@ async function buildSnapshot(code) {
     if (idx) recovered();
   }
 
+  // 15 分钟 K 线（多日）：东方财富为主，失败用腾讯
+  let bars15 = val(emK15, "东方财富15分钟线");
+  sources.bars15 = "东方财富";
+  if (!bars15) {
+    bars15 = await tencent15Bars(stockSym).catch((e) => (errors.push(`腾讯15分钟线: ${e.message}`), null));
+    sources.bars15 = bars15 ? "腾讯" : null;
+    if (bars15) recovered();
+  }
+
   let flowRows = val(flow, "东方财富资金流向");
   if (flowRows && bars) flowRows = flowRows.filter((r) => r.date === bars.date);
   if (flowRows) sources.flow = "东方财富";
@@ -122,6 +134,7 @@ async function buildSnapshot(code) {
     quote,
     book,
     bars: bars?.bars || [],
+    bars15: bars15 || [],
     benchmark: {
       ...bench,
       prevClose: txBench?.prevClose ?? idx?.prevClose ?? null,

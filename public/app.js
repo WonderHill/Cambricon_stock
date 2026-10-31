@@ -1,3 +1,4 @@
+import { advise, DEFAULT_SETTINGS, MODES } from "./advice.js";
 import { analyze, money } from "./analysis.js";
 
 const { createChart, LineSeries, HistogramSeries, createSeriesMarkers, LineStyle, CrosshairMode } =
@@ -373,6 +374,124 @@ function renderSignals(snap, a) {
   }
 }
 
+// ---------- 交易建议 ----------
+
+const SETTINGS_KEY = `advice-settings-${CODE}`;
+function loadSettings() {
+  try {
+    const v = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+    return {
+      mode: MODES[v.mode] ? v.mode : DEFAULT_SETTINGS.mode,
+      cost: v.cost > 0 ? Number(v.cost) : null,
+      stopPct: v.stopPct > 0 && v.stopPct <= 20 ? Number(v.stopPct) : DEFAULT_SETTINGS.stopPct,
+    };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+let settings = loadSettings();
+let lastAdvice = null; // { id, key }：用于判断结论是否变化，变化时提醒
+
+function syncSettingsUI() {
+  for (const b of $("mode-group").querySelectorAll("button")) b.classList.toggle("active", b.dataset.mode === settings.mode);
+  $("cost-field").hidden = settings.mode !== "hold";
+  $("stop-field").hidden = settings.mode !== "hold";
+  $("cost-input").value = settings.cost ?? "";
+  $("stop-input").value = settings.stopPct;
+}
+
+function updateSettings(patch) {
+  settings = { ...settings, ...patch };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  syncSettingsUI();
+  lastAdvice = null; // 换了设置，结论变化不算“新信号”
+  if (state.snap) renderAdvice(state.snap, state.analysis);
+}
+
+$("mode-group").addEventListener("click", (e) => {
+  const mode = e.target.closest("button")?.dataset.mode;
+  if (mode && mode !== settings.mode) updateSettings({ mode });
+});
+$("cost-input").addEventListener("change", (e) => {
+  const v = Number(e.target.value);
+  updateSettings({ cost: v > 0 ? v : null });
+});
+$("stop-input").addEventListener("change", (e) => {
+  const v = Number(e.target.value);
+  updateSettings({ stopPct: v > 0 && v <= 20 ? v : DEFAULT_SETTINGS.stopPct });
+});
+syncSettingsUI();
+
+const scoreText = (v) => `${v > 0 ? "+" : ""}${v}`;
+const lvText = (list) => (list.length ? list.map((x) => `${fp(x.price)}（${x.why}）`).join("、") : "--");
+
+function renderAdvice(snap, a) {
+  const box = $("advice");
+  const r = advise(snap, a, settings);
+  if (!r.ready) {
+    box.replaceChildren(el("p", { class: "muted" }, r.message));
+    return;
+  }
+
+  // 分数条：−10 到 +10 映射到 0–100%
+  const pos = (v) => `${((v + 10) / 20) * 100}%`;
+  const bar = el("div", { class: "score-bar", title: `综合分 ${scoreText(r.score)}，|分数| ≥ ${r.threshold} 才给出方向` });
+  bar.append(el("span", { class: "th", style: `left:${pos(-r.threshold)}` }), el("span", { class: "th", style: `left:${pos(r.threshold)}` }));
+  bar.append(el("span", { class: "mark", style: `left:${pos(r.score)}` }));
+
+  const dims = el(
+    "table",
+    { class: "dims" },
+    ...r.dims.map((d) =>
+      el(
+        "tr",
+        {},
+        el("td", {}, d.name),
+        el("td", { class: tone(d.score) }, scoreText(d.score)),
+        el("td", {}, ...d.reasons.map((x) => el("span", { class: `reason ${tone(x.s)}` }, x.text))),
+      ),
+    ),
+  );
+
+  const levels = el(
+    "div",
+    { class: "levels" },
+    el("span", {}, el("span", { class: "muted" }, "支撑 "), lvText(r.levels.support)),
+    el("span", {}, el("span", { class: "muted" }, "压力 "), lvText(r.levels.resistance)),
+  );
+  if (r.stop) levels.append(el("span", {}, el("span", { class: "muted" }, "止损 "), el("span", { class: "down" }, `${fp(r.stop.price)}（${r.stop.why}）`)));
+
+  const changes = el(
+    "div",
+    { class: "changes muted" },
+    "今日结论变化：",
+    ...r.changes.map((c) => el("span", { class: "chg" }, `${c.t} `, el("span", { class: c.tone }, c.text))),
+  );
+
+  box.replaceChildren(
+    el(
+      "div",
+      { class: "advice-main" },
+      el("span", { class: `advice-decision ${r.decision.tone}` }, r.decision.text),
+      el("span", { class: "muted" }, `${MODES[settings.mode]} · 自 ${r.since} 起 · 数据截至 ${r.time}`),
+    ),
+    el("div", { class: "advice-score" }, el("span", {}, "综合分 ", el("b", { class: tone(r.score) }, scoreText(r.score))), bar, el("span", { class: "muted" }, `门槛 ±${r.threshold}`)),
+    dims,
+    levels,
+    r.notes.length ? el("ul", { class: "notes" }, ...r.notes.map((n) => el("li", {}, n))) : "",
+    changes,
+  );
+
+  const id = `${snap.code}|${snap.tradeDate}|${settings.mode}`;
+  if (lastAdvice && lastAdvice.id === id && lastAdvice.key !== r.decision.key && "Notification" in window && Notification.permission === "granted") {
+    new Notification(`${snap.name} 交易建议：${r.decision.text}`, {
+      body: `${MODES[settings.mode]}，${r.since} 起，综合分 ${scoreText(r.score)}，现价 ${fp(r.price)}`,
+      tag: `advice-${snap.code}`,
+    });
+  }
+  lastAdvice = { id, key: r.decision.key };
+}
+
 function render(snap) {
   const a = analyze(snap);
   state.snap = snap;
@@ -383,11 +502,12 @@ function render(snap) {
   renderMetrics(snap, a);
   renderBook(snap.book, snap.quote?.prevClose);
   renderSignals(snap, a);
+  renderAdvice(snap, a);
   renderCharts(snap, a);
   updateLegend(null);
   const src = snap.sources || {};
   $("sources").textContent =
-    `本次数据源：报价 ${src.quote || "无"} · 分钟线 ${src.bars || "无"} · 资金流 ${src.flow || "无"} · 盘口 ${src.book || "无"}　服务器时间 ${snap.session?.beijingTime || "--"}` +
+    `本次数据源：报价 ${src.quote || "无"} · 分钟线 ${src.bars || "无"} · 15分钟线 ${src.bars15 || "无"} · 资金流 ${src.flow || "无"} · 盘口 ${src.book || "无"}　服务器时间 ${snap.session?.beijingTime || "--"}` +
     (snap.fallbacks?.length ? `　已切换备用源：${snap.fallbacks.join("；")}` : "");
 }
 

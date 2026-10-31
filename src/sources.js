@@ -114,7 +114,8 @@ export async function emMinuteBars(code, isIndex = false) {
   const rows = d.klines.map((s) => s.split(","));
   const date = rows[rows.length - 1][0].slice(0, 10);
   const bars = rows
-    .filter((r) => r[0].startsWith(date))
+    // 只保留连续竞价时段；科创板 15:05–15:30 的盘后固定价格交易不算盘中数据
+    .filter((r) => r[0].startsWith(date) && r[0].slice(11, 16) <= "15:00")
     .map(([dt, o, c, h, l, v, a]) => {
       const close = num(c);
       const amount = num(a);
@@ -129,6 +130,36 @@ export async function emMinuteBars(code, isIndex = false) {
       };
     });
   return { date, prevClose: num(d.preKPrice), bars };
+}
+
+// 最近约 8 个交易日的 15 分钟 K 线（交易建议的动量和均线用）。
+// 时间标签是这根 K 线的结束时间，例如 "09:45" 表示 9:30–9:45。
+export async function em15Bars(code, limit = 128) {
+  const url =
+    `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${emSecid(code)}` +
+    `&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56&klt=15&fqt=0&end=20500101&lmt=${limit}`;
+  const d = JSON.parse(await get(url, { referer: "https://quote.eastmoney.com/" })).data;
+  if (!d || !Array.isArray(d.klines) || d.klines.length === 0) throw new Error("eastmoney 15m kline empty");
+  return d.klines.map((s) => {
+    const [dt, o, c, h, l, v] = s.split(",");
+    return { d: dt.slice(0, 10), t: dt.slice(11, 16), o: num(o), h: num(h), l: num(l), c: num(c), v: scale(v, 100) };
+  });
+}
+
+// 15 分钟 K 线备用源（腾讯，成交量单位按板块不同，这里不使用成交量）
+export async function tencent15Bars(symbol, limit = 128) {
+  const json = JSON.parse(await get(`https://ifzq.gtimg.cn/appstock/app/kline/mkline?param=${symbol},m15,,${limit}`));
+  const rows = json?.data?.[symbol]?.m15;
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error("tencent 15m kline empty");
+  return rows.map(([dt, o, c, h, l]) => ({
+    d: `${dt.slice(0, 4)}-${dt.slice(4, 6)}-${dt.slice(6, 8)}`,
+    t: `${dt.slice(8, 10)}:${dt.slice(10, 12)}`,
+    o: num(o),
+    h: num(h),
+    l: num(l),
+    c: num(c),
+    v: null,
+  }));
 }
 
 // 当日资金流向（累计值，单位：元）
@@ -213,6 +244,7 @@ export async function tencentMinuteBars(symbol, isIndex = false) {
   let prevPrice = null;
   for (const row of node.data) {
     const [hhmm, p, cumVol, cumAmt] = row.split(" ");
+    if (hhmm > "1500") break; // 盘后固定价格交易
     const price = num(p);
     if (hhmm === "0930" || hhmm === "1300") {
       prevPrice = price;
