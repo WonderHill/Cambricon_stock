@@ -264,3 +264,151 @@ button:hover {
 .foot p {
   margin: 4px 0;
 }
+
+/* ---------- 交易建议 ---------- */
+
+.advice-card {
+  border-color: #2f3a52;
+}
+.advice-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+.advice-head h2 {
+  margin: 0;
+}
+.advice-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 13px;
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg button {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.seg button + button {
+  border-left: 1px solid var(--line);
+}
+.seg button.active {
+  background: #2a3a5c;
+  color: var(--text);
+}
+.field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+.field input {
+  width: 86px;
+  padding: 3px 6px;
+}
+#stop-input {
+  width: 56px;
+}
+
+.advice-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+}
+.advice-decision {
+  font-size: 22px;
+  font-weight: 600;
+}
+.advice-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  font-size: 13px;
+}
+.score-bar {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(34, 179, 94, 0.35), #2a3040 40%, #2a3040 60%, rgba(240, 72, 72, 0.35));
+}
+.score-bar .mark {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 14px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--text);
+}
+.score-bar .th {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--muted);
+}
+
+.dims {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.dims td {
+  padding: 4px 6px;
+  border-bottom: 1px dashed var(--line);
+  vertical-align: top;
+}
+.dims td:first-child {
+  white-space: nowrap;
+  color: var(--muted);
+  width: 1%;
+}
+.dims td:nth-child(2) {
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 600;
+  width: 1%;
+}
+.dims .reason {
+  display: inline-block;
+  margin-right: 12px;
+}
+
+.levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 13px;
+  margin: 6px 0;
+}
+.notes {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #f3d08a;
+}
+.changes {
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.8;
+}
+.changes .chg {
+  white-space: nowrap;
+  margin-right: 10px;
+}

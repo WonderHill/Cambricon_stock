@@ -34,6 +34,26 @@
 
     <main class="layout">
       <section class="col-main">
+        <div class="card advice-card">
+          <div class="advice-head">
+            <h2>交易建议 <small class="muted">按固定规则打分生成，不构成投资建议</small></h2>
+            <div class="advice-settings">
+              <div id="mode-group" class="seg" role="group" aria-label="持仓情况">
+                <button type="button" data-mode="flat">空仓</button>
+                <button type="button" data-mode="hold">持仓</button>
+                <button type="button" data-mode="t">底仓做T</button>
+              </div>
+              <label id="cost-field" class="field" hidden
+                >成本价 <input id="cost-input" type="number" inputmode="decimal" step="0.01" min="0" placeholder="可不填"
+              /></label>
+              <label id="stop-field" class="field" hidden
+                >止损 <input id="stop-input" type="number" inputmode="decimal" step="0.5" min="0.5" max="20" />%</label
+              >
+            </div>
+          </div>
+          <div id="advice" class="advice"><p class="muted">加载中…</p></div>
+        </div>
+
         <div class="card">
           <h2>盘面解读 <small class="muted">规则自动生成，仅供参考</small></h2>
           <ul id="summary" class="summary"></ul>
