@@ -313,6 +313,9 @@ button:hover {
   gap: 4px;
   color: var(--muted);
 }
+.field[hidden] {
+  display: none;
+}
 .field input {
   width: 86px;
   padding: 3px 6px;
