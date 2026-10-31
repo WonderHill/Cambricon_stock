@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>寒武纪 盘中分析</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="title">
+        <h1 id="name">--</h1>
+        <span id="code" class="muted">--</span>
+        <form id="code-form" class="code-form">
+          <input id="code-input" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="代码" aria-label="股票代码" />
+          <button type="submit">切换</button>
+        </form>
+      </div>
+      <div class="price-block">
+        <span id="price" class="price">--</span>
+        <span id="change" class="change">--</span>
+      </div>
+      <div class="status">
+        <span id="session" class="pill">--</span>
+        <span id="data-time" class="muted">--</span>
+        <span id="countdown" class="muted"></span>
+        <button id="refresh-btn" type="button">立即刷新</button>
+        <button id="notify-btn" type="button">开启信号提醒</button>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <main class="layout">
+      <section class="col-main">
+        <div class="card">
+          <h2>盘面解读 <small class="muted">规则自动生成，仅供参考</small></h2>
+          <ul id="summary" class="summary"></ul>
+        </div>
+
+        <div class="card">
+          <h2>分时走势 <small class="muted">白线：价格　黄线：均价(VWAP)　虚线：昨收　标记：均=穿越均价线 量=放量 资=主力资金转向</small></h2>
+          <div id="legend" class="legend">&nbsp;</div>
+          <div id="chart-main" class="chart chart-main"></div>
+        </div>
+
+        <div class="card">
+          <h2>相对强弱 <small class="muted">涨跌幅 %，相对昨收</small></h2>
+          <div id="chart-rel" class="chart chart-sub"></div>
+        </div>
+
+        <div class="card">
+          <h2>资金流向 <small class="muted">当日累计净流入</small></h2>
+          <div id="chart-flow" class="chart chart-sub"></div>
+        </div>
+      </section>
+
+      <aside class="col-side">
+        <div class="card">
+          <h2>行情</h2>
+          <dl id="stats" class="stats"></dl>
+        </div>
+        <div class="card">
+          <h2>盘中指标</h2>
+          <dl id="metrics" class="stats"></dl>
+        </div>
+        <div class="card">
+          <h2>五档盘口 <small class="muted">单位：股</small></h2>
+          <table id="book" class="book"></table>
+        </div>
+        <div class="card">
+          <h2>信号 <small class="muted">最新在上</small></h2>
+          <ol id="signals" class="signals"></ol>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot muted">
+      <p>
+        数据来自东方财富、腾讯财经的公开接口（非官方，可能变动或中断），每分钟刷新一次，可能有 1–2 分钟延迟。仅供个人学习研究，不构成投资建议。
+      </p>
+      <p id="sources"></p>
+    </footer>
+
+    <script src="./vendor/lightweight-charts.standalone.production.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+name = "cambricon-monitor"
+main = "src/worker.js"
+compatibility_date = "2026-10-28"
+
+# 前端静态文件（public/）和 API 由同一个 Worker 提供，部署一次即可
+[assets]
+directory = "./public"
+binding = "ASSETS"
